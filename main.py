@@ -12,19 +12,19 @@ user4 = User(suppl2)
 
 user_list = [user1, user2, user3, user4]
 suppl_list = [suppl1, suppl2]
-payload_list = [(1, 5, 2, 0), (1,7,7,0), (-1,9,1,0), (1, -1, 4, 0)]
+payload_list = [(1,1, 5,2, 1), (1,-1, 1,-4, -1), (-1,-1, 9,1, 1), (-1,1, 1,-4, -1)]
 for user in user_list:
     user.update_payload(payload_list.pop(0))
 
-trade_plat = TradingPlatform(TP = 1, RP = 1, FiT = 1, user_list = user_list, supplier_list = [suppl1,suppl2])
+trade_plat = TradingPlatform(algorithm = 2, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list)
 trade_plat.calculate_partial_bills()
 # trade_plat.calculate_partial_bills()
 
 user_bills = trade_plat.get_partial_bills()
 suppl_bills = trade_plat.get_supplier_bills()
-print("ENCRYPTED")
-print("User bills: ",  user_bills)
-print("Supplier bills: ",  suppl_bills)
+# print("ENCRYPTED")
+# print("User bills: ",  user_bills)
+# print("Supplier bills: ",  suppl_bills)
 
 for user in user_list[:2]:
     user_bills[user] = [suppl1.decode(x) for x in user_bills[user]]

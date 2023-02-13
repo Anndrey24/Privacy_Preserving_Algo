@@ -25,4 +25,4 @@ class User:
 
     def update_payload(self, payload_in):
         key = self.supplier.get_public_key()
-        self.payload = (payload_in[0], key.encrypt(payload_in[1]), key.encrypt(payload_in[2]), payload_in[3])
+        self.payload = (payload_in[0], payload_in[1], key.encrypt(payload_in[2]), key.encrypt(payload_in[3]), payload_in[4])
