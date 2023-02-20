@@ -19,13 +19,13 @@ user4 = User(suppl2)
 
 user_list = [user1, user2, user3, user4]
 suppl_list = [suppl1, suppl2]
-payload_list = [(1, 1,3,-2), (1, 1,3,1), (1, 1,3,3), (1, -1,9,0)]
+payload_list = [(1, 1,3,-2), (1, 1,3,1), (1, 1,3,3), (1, -1,9,1)]
 
 start_time = time.time()
 for user in user_list:
     user.update_payload(payload_list.pop(0))
 payload_time = time.time()
-trade_plat = TradingPlatform(algorithm = 3, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
+trade_plat = TradingPlatform(algorithm = 1, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
 trade_plat.calculate_partial_bills()
 settlement_time = time.time()
 
@@ -100,9 +100,22 @@ def print_results(options):
         for i, supplier in enumerate(suppl_list):
             print("Supplier ", i, ": ", suppl_bills_go_enc[supplier])
 
-print_results([0,1,0,1])
+    sum1 = 0
+    for user in user_list[:2]:
+        sum1 += sum(user_bills_go_enc[user])
+    sum2 = 0
+    for user in user_list[2:]:
+        sum2 += sum(user_bills_go_enc[user])
+    supp1_keep = sum([sum(x) for x in suppl_bills_go_enc[suppl1]])
+    supp2_keep = sum([sum(x) for x in suppl_bills_go_enc[suppl2]])
+    print()
+    print("Supplier 1 gets from users ", -sum1, " and needs to keep ", supp1_keep, " so it puts ", -sum1 - supp1_keep," in the pot")
+    print("Supplier 2 gets from users ", -sum2, " and needs to keep ", supp2_keep, " so it puts ", -sum2 - supp2_keep," in the pot")
+
+print_results([0,0,0,1])
 decryption_time = time.time()
 print()
 print("Payload encryption time: , ", payload_time - start_time)
 print("Algorithm time: , ", settlement_time - payload_time)
 print("Decryption time: , ", decryption_time - settlement_time)
+
