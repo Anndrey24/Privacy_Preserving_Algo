@@ -1,11 +1,14 @@
 from phe import paillier
-import random
+from math import copysign
 
 class User:
 
     bid = 0
     isBidAccepted = False
-    payload = (0,0,0,0)
+    # (is_bid_accepted, bid_type, consumption_type, committed_value_s_enc, indiv_deviation_s_enc, committed_value_go_enc, indiv_deviation_go_enc, indiv_dev_sign)
+    # 1 => buy  /  -1 => sell
+
+    payload = (0,0,0,0,0,0,0)
 
     def __init__(self, supplier):
         self.supplier = supplier
@@ -24,5 +27,22 @@ class User:
         return self.payload
 
     def update_payload(self, payload_in):
-        key = self.supplier.get_public_key()
-        self.payload = (payload_in[0], payload_in[1], key.encrypt(payload_in[2]), key.encrypt(payload_in[3]), payload_in[4])
+        supplier_key = self.supplier.get_public_key()
+        gridop_key = self.supplier.get_grid_op().get_public_key()
+
+        is_bid_accepted = payload_in[0]
+        bid_type = payload_in[1]
+        committed = payload_in[2]
+        ind_dev = payload_in[3]
+        if ind_dev == 0:
+            ind_dev_sign = 0
+        else:
+            ind_dev_sign = int(copysign(1,ind_dev))
+        energy_amount = committed + ind_dev
+        energy_amount_sign = int(copysign(1,energy_amount))
+        consumption_type = energy_amount_sign * bid_type
+
+        self.payload = (is_bid_accepted, bid_type, consumption_type,
+                        supplier_key.encrypt(committed), supplier_key.encrypt(ind_dev),
+                        gridop_key.encrypt(committed), gridop_key.encrypt(ind_dev),
+                        ind_dev_sign)
