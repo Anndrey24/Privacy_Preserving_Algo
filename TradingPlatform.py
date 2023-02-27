@@ -239,7 +239,7 @@ class TradingPlatform:
                 if indiv_dev_sign >= 0:
                     bill = bought_from_P2P
                 else:
-                    sold_to_supplier = indiv_deviation * (1 + self.agg["t_c_over"] / self.agg["t_c_under"]) * self.FiT
+                    sold_to_supplier = indiv_deviation * (1 - self.agg["t_c_over"] / self.agg["t_c_under"]) * self.FiT
                     bill = bought_from_P2P + sold_to_supplier
                     supplier_balance = sold_to_supplier
             elif self.agg["tdd"] > 0:
@@ -260,7 +260,7 @@ class TradingPlatform:
                 if indiv_dev_sign >= 0:
                     reward = sold_to_P2P
                 else:
-                    bought_from_supplier = indiv_deviation * (1 + self.agg["t_p_over"] / self.agg["t_p_under"]) * self.RP
+                    bought_from_supplier = indiv_deviation * (1 - self.agg["t_p_over"] / self.agg["t_p_under"]) * self.RP
                     reward = sold_to_P2P + bought_from_supplier
                     supplier_balance = bought_from_supplier * (-1)
             elif self.agg["tsd"] > 0:

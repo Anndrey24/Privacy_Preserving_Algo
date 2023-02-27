@@ -19,13 +19,13 @@ user4 = User(suppl2)
 
 user_list = [user1, user2, user3, user4]
 suppl_list = [suppl1, suppl2]
-payload_list = [(1, 1,3,-2), (1, 1,3,1), (1, 1,3,3), (1, -1,9,1)]
+payload_list = [(1, 1,3,-3), (1, 1,3,-1), (1, 1,3,2), (1, -1,9,0)]
 
 start_time = time.time()
 for user in user_list:
     user.update_payload(payload_list.pop(0))
 payload_time = time.time()
-trade_plat = TradingPlatform(algorithm = 1, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
+trade_plat = TradingPlatform(algorithm = 4, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
 trade_plat.calculate_partial_bills()
 settlement_time = time.time()
 
