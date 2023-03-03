@@ -331,37 +331,3 @@ class TradingPlatform:
                     supplier_balance += sold_to_supplier * (-1)
             user_bills[user].append(reward)
         supplier_dict[supplier][-1].append(supplier_balance)
-
-        # # Consumer
-        # if bid_type == 1:
-        #     bought_from_P2P = committed_value * self.TP
-        #     if self.agg["td"] == 0:
-        #         bill += bought_from_P2P
-        #     elif self.agg["td"] < 0:
-        #         if indiv_dev_sign <= 0:
-        #             bill += bought_from_P2P
-        #         else:
-        #             # bought_from_P2P = (committed_value - self.agg["td"] / self.agg["p2p_c_n"]) * self.TP # Remove
-        #             bought_from_supplier = (-self.agg["td"] / self.agg["p2p_c_over"]) * self.RP
-        #             bill += bought_from_P2P + bought_from_supplier
-        #             supplier_balance += bought_from_supplier
-        #     elif self.agg["td"] > 0:
-        #         bill += bought_from_P2P
-        #     user_bills[user].append(bill * (-1))
-        # # Prosumer
-        # else:
-        #     sold_to_P2P = committed_value * self.TP
-        #     if self.agg["td"] == 0:
-        #         reward += sold_to_P2P
-        #     elif self.agg["td"] < 0:
-        #         reward += sold_to_P2P
-        #     elif self.agg["td"] > 0:
-        #         if indiv_dev_sign <= 0:
-        #             reward += sold_to_P2P
-        #         else:
-        #             # sold_to_P2P = (committed_value - self.agg["td"] / self.agg["p2p_p_n"]) * self.TP # Remove
-        #             sold_to_supplier = (self.agg["td"] / self.agg["p2p_p_over"]) * self.FiT
-        #             reward += sold_to_P2P + sold_to_supplier
-        #             supplier_balance += sold_to_supplier * (-1)
-        #     user_bills[user].append(reward)
-        # supplier_dict[supplier][-1].append(supplier_balance)
