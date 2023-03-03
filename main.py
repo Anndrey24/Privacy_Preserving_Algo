@@ -5,27 +5,26 @@ from User import User
 from TradingPlatform import TradingPlatform
 from GridOperator import GridOperator
 import time
+import random
 
 
 grid_op = GridOperator()
 
-suppl1 = Supplier("1", grid_op)
-suppl2 = Supplier("2", grid_op)
+user_list = []
+suppl_list = []
+no_suppl = 2
+for i in range(no_suppl):
+    suppl_list.append(Supplier(str(i), grid_op))
 
-user1 = User(suppl1)
-user2 = User(suppl1)
-user3 = User(suppl2)
-user4 = User(suppl2)
+start_time = time.time()   
+payload_list = [(1, 1,3,-2), (1, 1,3,1), (1, 1,3,3), (1, -1,3,-2), (1, -1,3,1), (1, -1,3,3)]
+for payload in payload_list:
+    user = User(random.choice(suppl_list))
+    user_list.append(user)
+    user.update_payload(payload)
 
-user_list = [user1, user2, user3, user4]
-suppl_list = [suppl1, suppl2]
-payload_list = [(1, 1,3,-3), (1, 1,3,-1), (1, 1,3,2), (1, -1,9,0)]
-
-start_time = time.time()
-for user in user_list:
-    user.update_payload(payload_list.pop(0))
 payload_time = time.time()
-trade_plat = TradingPlatform(algorithm = 4, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
+trade_plat = TradingPlatform(algorithm = 3, TP = 0.75, RP = 1, FiT = 0.5, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
 trade_plat.calculate_partial_bills()
 settlement_time = time.time()
 
@@ -40,7 +39,7 @@ def print_results(options):
         print("ENCRYPTED")
         print("User bills:")
         for i, user in enumerate(user_list):
-            print("User ", i, ": ", [x.ciphertext()%100 for x in user_bills_s_enc[user]])
+            print("User ", i," (S",user.get_supplier().get_name(),"): ", [x.ciphertext()%100 for x in user_bills_s_enc[user]])
         print()
         print("Supplier bills: ")
         for i, supplier in enumerate(suppl_list):
@@ -59,7 +58,7 @@ def print_results(options):
         print("DECRYPTED")
         print("User bills:")
         for i, user in enumerate(user_list):
-            print("User ", i, ": ", user_bills_s_enc[user])
+            print("User ", i, " (S",user.get_supplier().get_name(),"): ", user_bills_s_enc[user])
         print("Supplier bills:")
         for i, supplier in enumerate(suppl_list):
             print("Supplier ", i, ": ", suppl_bills_s_enc[supplier])
@@ -76,7 +75,7 @@ def print_results(options):
         print("ENCRYPTED")
         print("User bills:")
         for i, user in enumerate(user_list):
-            print("User ", i, ": ", [x.ciphertext()%100 for x in user_bills_go_enc[user]])
+            print("User ", i, " (S",user.get_supplier().get_name(),"): ", [x.ciphertext()%100 for x in user_bills_go_enc[user]])
         print()
         print("Supplier bills: ")
         for i, supplier in enumerate(suppl_list):
@@ -95,22 +94,19 @@ def print_results(options):
         print("DECRYPTED")
         print("User bills:")
         for i, user in enumerate(user_list):
-            print("User ", i, ": ", user_bills_go_enc[user])
+            print("User ", i, " (S",user.get_supplier().get_name(),"): ", user_bills_go_enc[user])
         print("Supplier bills:")
         for i, supplier in enumerate(suppl_list):
             print("Supplier ", i, ": ", suppl_bills_go_enc[supplier])
 
-    sum1 = 0
-    for user in user_list[:2]:
-        sum1 += sum(user_bills_go_enc[user])
-    sum2 = 0
-    for user in user_list[2:]:
-        sum2 += sum(user_bills_go_enc[user])
-    supp1_keep = sum([sum(x) for x in suppl_bills_go_enc[suppl1]])
-    supp2_keep = sum([sum(x) for x in suppl_bills_go_enc[suppl2]])
     print()
-    print("Supplier 1 gets from users ", -sum1, " and needs to keep ", supp1_keep, " so it puts ", -sum1 - supp1_keep," in the pot")
-    print("Supplier 2 gets from users ", -sum2, " and needs to keep ", supp2_keep, " so it puts ", -sum2 - supp2_keep," in the pot")
+    for i, supplier in enumerate(suppl_list):
+        sum1 = 0
+        for user in supplier.get_users():
+            sum1 += sum(user_bills_go_enc[user])
+        supp_keep = sum([sum(x) for x in suppl_bills_go_enc[supplier]])
+
+        print("Supplier ", i ," gets from users ", -sum1, " and needs to keep ", supp_keep, " so it puts ", -sum1 - supp_keep," in the pot")
 
 print_results([0,0,0,1])
 decryption_time = time.time()

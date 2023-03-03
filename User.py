@@ -2,16 +2,14 @@ from phe import paillier
 from math import copysign
 
 class User:
-
-    bid = 0
-    isBidAccepted = False
+  
     # (is_bid_accepted, bid_type, consumption_type, committed_value_s_enc, indiv_deviation_s_enc, committed_value_go_enc, indiv_deviation_go_enc, indiv_dev_sign)
     # 1 => buy  /  -1 => sell
 
-    payload = (0,0,0,0,0,0,0)
-
     def __init__(self, supplier):
+        self.payload = (0,0,0,0,0,0,0)
         self.supplier = supplier
+        supplier.add_user(self)
 
     def get_supplier(self):
         return self.supplier

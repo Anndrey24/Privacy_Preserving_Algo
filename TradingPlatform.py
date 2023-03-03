@@ -1,6 +1,9 @@
 from phe import paillier
 
 class TradingPlatform:
+    TP = RP = FiT = 0
+    algorithm = 0
+    grid_op = None
     users = []
     user_payloads = {}
     user_bills_s_enc = {}
@@ -133,32 +136,33 @@ class TradingPlatform:
                          bid_type, committed_value_go_enc, indiv_deviation_go_enc, indiv_dev_sign)
 
     def algo_2_calc(self, user, user_bills, supplier, supplier_dict, bid_type, committed_value, indiv_deviation, indiv_dev_sign):
-        bill = reward = supplier_balance = 0
+        bill = reward = supplier_balance = committed_value * 0
+
         if bid_type == 1:
             bought_from_P2P = committed_value * self.TP
             if indiv_dev_sign == 0:
-                bill = bought_from_P2P
+                bill += bought_from_P2P
             elif indiv_dev_sign == -1: 
                 sold_to_supplier = indiv_deviation * self.FiT
-                bill = bought_from_P2P + sold_to_supplier
-                supplier_balance = sold_to_supplier
+                bill += bought_from_P2P + sold_to_supplier
+                supplier_balance += sold_to_supplier
             elif indiv_dev_sign == 1:
                 bought_from_supplier = indiv_deviation * self.RP
-                bill = bought_from_P2P + bought_from_supplier
-                supplier_balance = bought_from_supplier
+                bill += bought_from_P2P + bought_from_supplier
+                supplier_balance += bought_from_supplier
             user_bills[user].append(bill * (-1))
         else:
             sold_to_P2P = committed_value * self.TP
             if indiv_dev_sign == 0:
-                reward = sold_to_P2P
+                reward += sold_to_P2P
             elif indiv_dev_sign == -1: 
                 bought_from_supplier = indiv_deviation * self.RP
-                reward = sold_to_P2P + bought_from_supplier
-                supplier_balance = bought_from_supplier * (-1)
+                reward += sold_to_P2P + bought_from_supplier
+                supplier_balance += bought_from_supplier * (-1)
             elif indiv_dev_sign == 1:
                 sold_to_supplier = indiv_deviation * self.FiT
-                reward = sold_to_P2P + sold_to_supplier
-                supplier_balance = sold_to_supplier * (-1)
+                reward += sold_to_P2P + sold_to_supplier
+                supplier_balance += sold_to_supplier * (-1)
             user_bills[user].append(reward)
         supplier_dict[supplier][-1].append(supplier_balance)
 
@@ -228,49 +232,47 @@ class TradingPlatform:
                          bid_type, committed_value_go_enc, indiv_deviation_go_enc, indiv_dev_sign)
         
     def algo_3_calc(self, user, user_bills, supplier, supplier_dict, bid_type, committed_value, indiv_deviation, indiv_dev_sign):
-        bill = reward = 0
-        supplier_balance = committed_value * 0
+        bill = reward = supplier_balance = committed_value * 0
         # Consumer
         if bid_type == 1:
             bought_from_P2P = committed_value * self.TP
             if self.agg["tdd"] == 0:
-                bill = bought_from_P2P
+                bill += bought_from_P2P
             elif self.agg["tdd"] < 0:
                 if indiv_dev_sign >= 0:
-                    bill = bought_from_P2P
+                    bill += bought_from_P2P + indiv_deviation * self.TP
                 else:
                     sold_to_supplier = indiv_deviation * (1 - self.agg["t_c_over"] / self.agg["t_c_under"]) * self.FiT
-                    bill = bought_from_P2P + sold_to_supplier
-                    supplier_balance = sold_to_supplier
+                    bill += bought_from_P2P + (indiv_deviation * self.agg["t_c_over"] / self.agg["t_c_under"] * self.TP) + sold_to_supplier
+                    supplier_balance += sold_to_supplier
             elif self.agg["tdd"] > 0:
                 if indiv_dev_sign <= 0:
-                    bill = bought_from_P2P
+                    bill += bought_from_P2P + indiv_deviation * self.TP
                 else:
-                    # bought_from_P2P = (committed_value + self.agg["t_c_under"] / self.agg["p2p_c_over"]) * self.TP
                     bought_from_supplier = indiv_deviation * (1 - self.agg["t_c_under"] / self.agg["t_c_over"]) * self.RP
-                    bill = bought_from_P2P + bought_from_supplier
-                    supplier_balance = bought_from_supplier
+                    bill += bought_from_P2P + (indiv_deviation * self.agg["t_c_under"] / self.agg["t_c_over"] * self.TP) + bought_from_supplier
+                    supplier_balance += bought_from_supplier
             user_bills[user].append(bill * (-1))
         # Prosumer
         else:
             sold_to_P2P = committed_value * self.TP
             if self.agg["tsd"] == 0:
-                reward = sold_to_P2P
+                reward += sold_to_P2P
             elif self.agg["tsd"] < 0:
                 if indiv_dev_sign >= 0:
-                    reward = sold_to_P2P
+                    reward += sold_to_P2P + indiv_deviation * self.TP
                 else:
                     bought_from_supplier = indiv_deviation * (1 - self.agg["t_p_over"] / self.agg["t_p_under"]) * self.RP
-                    reward = sold_to_P2P + bought_from_supplier
-                    supplier_balance = bought_from_supplier * (-1)
+                    reward += sold_to_P2P + (indiv_deviation * self.agg["t_p_over"] / self.agg["t_p_under"] * self.TP) + bought_from_supplier
+                    supplier_balance += bought_from_supplier * (-1)
             elif self.agg["tsd"] > 0:
                 if indiv_dev_sign <= 0:
-                    reward = sold_to_P2P
+                    reward += sold_to_P2P + indiv_deviation * self.TP
                 else:
                     # sold_to_P2P = (committed_value + self.agg["t_p_under"] / self.agg["p2p_p_over"]) * self.TP
                     sold_to_supplier = indiv_deviation * (1 - self.agg["t_p_under"] / self.agg["t_p_over"]) * self.FiT
-                    reward = sold_to_P2P + sold_to_supplier
-                    supplier_balance = sold_to_supplier * (-1)
+                    reward += sold_to_P2P + (indiv_deviation *  self.agg["t_p_under"] / self.agg["t_p_over"] * self.TP) + sold_to_supplier
+                    supplier_balance += sold_to_supplier * (-1)
             user_bills[user].append(reward)
         supplier_dict[supplier][-1].append(supplier_balance)
 
@@ -285,38 +287,37 @@ class TradingPlatform:
                          bid_type, committed_value_go_enc, indiv_deviation_go_enc, indiv_dev_sign)
         
     def algo_4_calc(self, user, user_bills, supplier, supplier_dict, bid_type, committed_value, indiv_deviation, indiv_dev_sign):
-        bill = reward = 0
-        bought_from_supplier = sold_to_supplier = supplier_balance = committed_value * 0
+        bill = reward  = supplier_balance = committed_value * 0
         # Consumer
         if bid_type == 1:
             bought_from_P2P = committed_value * self.TP
             if self.agg["td"] == 0:
-                bill = bought_from_P2P
+                bill += bought_from_P2P
             elif self.agg["td"] < 0:
                 if indiv_dev_sign <= 0:
-                    bill = bought_from_P2P
+                    bill += bought_from_P2P
                 else:
                     # bought_from_P2P = (committed_value - self.agg["td"] / self.agg["p2p_c_n"]) * self.TP # Remove
-                    bought_from_supplier += (-self.agg["td"] / self.agg["p2p_c_over"]) * self.RP
-                    bill = bought_from_P2P + bought_from_supplier
-                    supplier_balance = bought_from_supplier
+                    bought_from_supplier = (-self.agg["td"] / self.agg["p2p_c_over"]) * self.RP
+                    bill += bought_from_P2P + bought_from_supplier
+                    supplier_balance += bought_from_supplier
             elif self.agg["td"] > 0:
-                bill = bought_from_P2P
+                bill += bought_from_P2P
             user_bills[user].append(bill * (-1))
         # Prosumer
         else:
             sold_to_P2P = committed_value * self.TP
             if self.agg["td"] == 0:
-                reward = sold_to_P2P
+                reward += sold_to_P2P
             elif self.agg["td"] < 0:
-                reward = sold_to_P2P
+                reward += sold_to_P2P
             elif self.agg["td"] > 0:
                 if indiv_dev_sign <= 0:
-                    reward = sold_to_P2P
+                    reward += sold_to_P2P
                 else:
                     # sold_to_P2P = (committed_value - self.agg["td"] / self.agg["p2p_p_n"]) * self.TP # Remove
-                    sold_to_supplier += (self.agg["td"] / self.agg["p2p_p_over"]) * self.FiT
-                    reward = sold_to_P2P + sold_to_supplier
-                    supplier_balance = sold_to_supplier * (-1)
+                    sold_to_supplier = (self.agg["td"] / self.agg["p2p_p_over"]) * self.FiT
+                    reward += sold_to_P2P + sold_to_supplier
+                    supplier_balance += sold_to_supplier * (-1)
             user_bills[user].append(reward)
         supplier_dict[supplier][-1].append(supplier_balance)
