@@ -46,12 +46,25 @@ class TradingPlatform:
         else:
             return self.user_bills_go_enc
 
+    def get_final_user_bills(self, type = 's'):
+        if type == 's':
+            dict = self.user_bills_s_enc
+        else:
+            dict = self.user_bills_go_enc
+        return {k:sum(v) for k,v in dict.items()}
+    
     def get_supplier_bills(self, type = 's'):
         if type == 's':
             return self.supplier_dict_s_enc
         else:
             return self.supplier_dict_go_enc
 
+    def get_final_supplier_bills(self, type = 's'):
+        if type == 's':
+            dict = self.supplier_dict_s_enc
+        else:
+            dict = self.supplier_dict_go_enc
+        return {k:[sum(slot) for slot in v] for k,v in dict.items()}
 
     def calculate_partial_bills(self):
         for supplier in self.suppliers:
