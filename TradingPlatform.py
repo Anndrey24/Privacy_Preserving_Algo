@@ -1,33 +1,31 @@
 from phe import paillier
 
 class TradingPlatform:
-    TP = RP = FiT = 0
-    algorithm = 0
-    grid_op = None
-    users = []
-    user_payloads = {}
-    user_bills_s_enc = {}
-    user_bills_go_enc = {}
-
-    suppliers = []
-    supplier_dict_s_enc = {}
-    supplier_dict_go_enc = {}
-
+    
     keylist = ["td", "tdd", "tsd", "td_down", "td_up", "t_c_over", "t_c_under", "p2p_c_over", "p2p_c_under", 
         "t_p_over", "t_p_under", "p2p_p_over", "p2p_p_under", "p2p_c_n", "p2p_p_n", 
         "c_n", "p_n", "t_p_sup"]
-    agg = {}
-
+    
     def __init__(self, algorithm, TP, RP, FiT, user_list, supplier_list, grid_op):
+        self.grid_op = grid_op
         self.algorithm = algorithm
         self.TP = TP
         self.RP = RP
         self.FiT = FiT
+        self.agg = {}
+
+        self.users = []
+        self.user_payloads = {}
+        self.user_bills_s_enc = {}
+        self.user_bills_go_enc = {}
         for user in user_list:
             self.add_user(user)
+
+        self.suppliers = []
+        self.supplier_dict_s_enc = {}
+        self.supplier_dict_go_enc = {}
         for supplier in supplier_list:
             self.add_supplier(supplier)
-        self.grid_op = grid_op
 
     def add_user(self, user):
         self.users.append(user)
@@ -88,7 +86,7 @@ class TradingPlatform:
         elif self.algorithm == 3:
             self.aggregate_values()
             self.get_decrypted_aggregates()
-            print(self.agg)
+            # print(self.agg)
             for user in self.users:
                 payload = user.get_payload()
                 self.user_payloads[user].append(payload)
@@ -100,7 +98,7 @@ class TradingPlatform:
         elif self.algorithm == 4:
             self.aggregate_values()
             self.get_decrypted_aggregates()
-            print(self.agg)
+            # print(self.agg)
             for user in self.users:
                 payload = user.get_payload()
                 self.user_payloads[user].append(payload)

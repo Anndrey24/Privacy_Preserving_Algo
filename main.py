@@ -7,42 +7,7 @@ from GridOperator import GridOperator
 import time
 import random
 from math import copysign
-
-
-grid_op = GridOperator()
-
-user_list = []
-suppl_list = []
-payload_list = []
-no_suppl = 3
-no_users = 100
-for i in range(no_suppl):
-    suppl_list.append(Supplier(str(i), grid_op))
-
-# (is_bid_accepted, bid_type, committed_value, indiv_deviation)
-# 1 => buy  /  -1 => sell
-start_time = time.time()   
-# payload_list = [(1, 1,3,-3), (1, 1,3,1), (1,1,3,3), (1, -1,5,-2), (1, -1,4,1), (0,1,3,3) ]
-total = 0
-for i in range(no_users-1):
-    bid_type = random.choice([-1,1])
-    committed = random.random()
-    total += bid_type * committed
-    indev = random.random()
-    payload_list.append((1,bid_type,committed,indev))
-payload_list.append((1,int(copysign(1,-total)),abs(-total),random.random()))
-print(payload_list)
-for payload in payload_list:
-    user = User(random.choice(suppl_list))
-    user_list.append(user)
-    user.update_payload(payload)
-
-payload_time = time.time()
-trade_plat = TradingPlatform(algorithm = 4, TP = 0.2, RP = 0.35, FiT = 0.05, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op)
-trade_plat.calculate_partial_bills()
-trade_plat.calculate_partial_bills()
-settlement_time = time.time()
-
+from statistics import mean
 
 def print_all_results(options):
     # Supplier Decryption
@@ -136,7 +101,7 @@ def print_all_results(options):
     print("\nSuppliers keep ", total_supp_keep, " from the users")
     print("Pot after trading period: ", "%.2f" % total_pot, " (should be 0)")
 
-def print_results():
+def print_results(trade_plat, user_list, suppl_list):
     final_user_bills_s_enc = trade_plat.get_final_user_bills()
     final_suppl_bills_s_enc = trade_plat.get_final_supplier_bills()
 
@@ -146,10 +111,10 @@ def print_results():
     for supplier in suppl_list:
         final_suppl_bills_s_enc[supplier] = [supplier.decode(x) for x in final_suppl_bills_s_enc[supplier]]
 
-    print("User bills:")
+    print("User balance change:")
     for i, user in enumerate(user_list):
         print("User ", i, " (S",user.get_supplier().get_name(),"): ", final_user_bills_s_enc[user])
-    print("Supplier bills:")
+    print("Supplier balance change:")
     for i, supplier in enumerate(suppl_list):
         print("Supplier ", i, ": ", final_suppl_bills_s_enc[supplier])
     
@@ -157,21 +122,81 @@ def print_results():
     total_supp_keep = 0
     total_pot = 0
     for i, supplier in enumerate(suppl_list):
-        sum1 = 0
+        suppl_user_bills = 0
         for user in supplier.get_users():
-            sum1 += final_user_bills_s_enc[user]
+            suppl_user_bills += final_user_bills_s_enc[user]
         supp_keep = sum(final_suppl_bills_s_enc[supplier])
         total_supp_keep += supp_keep
-        total_pot += (-sum1 - supp_keep) 
-        print("Supplier ", i ," gets from users ", -sum1, " and needs to keep ", supp_keep, " so it puts ", -sum1 - supp_keep," in the pot")
-    print("\nSuppliers keep ", total_supp_keep, " from the users")
+        total_pot += (-suppl_user_bills - supp_keep) 
+        print("Supplier ", i ," gets from users ", -suppl_user_bills, " and needs to keep ", supp_keep, " so it puts ", -suppl_user_bills - supp_keep," in the pot")
+    print("\nTotal suppliers balance change ", total_supp_keep, " from trading with the users")
     print("Pot after trading period: ", "%.2f" % total_pot, " (should be 0)")
+    return total_supp_keep
+   
 
-# print_all_results([0,0,0,1])
-print_results()
+grid_op = GridOperator()
+
+user_list = []
+suppl_list = []
+payload_list = []
+no_suppl = 5
+no_users = 100
+no_slots = 3
+for i in range(no_suppl):
+    suppl_list.append(Supplier(str(i), grid_op))
+for i in range(no_users):
+    user = User(random.choice(suppl_list))
+    user_list.append(user)
+
+# (is_bid_accepted, bid_type, committed_value, indiv_deviation)
+# 1 => buy  /  -1 => sell
+start_time = time.time()   
+# payload_list = [(1, 1,3,-3), (1, 1,3,1), (1,1,3,3), (1, -1,5,-2), (1, -1,4,1), (0,1,3,3) ]
+for slot in range(no_slots):
+    payload_list.append([])
+    total = 0
+    for i in range(no_users-1):
+        bid_type = random.choice([-1,1])
+        committed = random.random()
+        total += bid_type * committed
+        indev = random.random() - 0.5
+        payload_list[-1].append((1,bid_type,committed,indev))
+    payload_list[-1].append((1,int(copysign(1,-total)),abs(-total),random.random()))  
+print("Payloads: ", payload_list)
+
+
+algo_times = dict()
+enc_times = list()
+total_supp_keep_list = list()
+trade_plat_list = list()
+for i in range(1,5):
+    trade_plat_list.append(TradingPlatform(algorithm = i, TP = 0.2, RP = 0.35, FiT = 0.05, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op))
+    algo_times[i] = []
+
+for i, slot in enumerate(payload_list):
+    print("\nEncrypting payloads for slot ", i + 1,"...")
+    enc_start = time.time()
+    for j, payload in enumerate(slot):
+            user_list[j].update_payload(payload)
+    enc_times.append(time.time() - enc_start)
+    
+    print("Running algorithms for slot ", i + 1,"...")
+    for i, trade_plat in enumerate(trade_plat_list):
+        algo_start_time = time.time()
+        trade_plat.calculate_partial_bills()
+        algo_times[i+1].append(time.time() - algo_start_time)
+        
+for i, trade_plat in enumerate(trade_plat_list):  
+    print("\n\nResults for algorithm ", i, ":")
+    total_supp_keep_list.append(print_results(trade_plat, user_list, suppl_list))
+
+print("\n\nTotal supplier balances: ")
+print(total_supp_keep_list)
+
 decryption_time = time.time()
 print()
-print("Payload encryption time: , ", payload_time - start_time)
-print("Algorithm time: , ", settlement_time - payload_time)
-print("Decryption time: , ", decryption_time - settlement_time)
+print("Payload encryption time: , ", sum(enc_times)/(no_slots*no_users))
+for i in range(len(trade_plat_list)):
+    print("Algorithm ",i+1," time: , ", mean(algo_times[i+1]))
+# print("Decryption time: , ", decryption_time - settlement_time)
 
