@@ -139,9 +139,13 @@ grid_op = GridOperator()
 user_list = []
 suppl_list = []
 payload_list = []
-no_suppl = 5
-no_users = 100
-no_slots = 3
+
+# CHANGE SIMULATION PARAMETERS HERE
+no_suppl = 3
+no_users = 10
+no_slots = 24
+###################################
+
 for i in range(no_suppl):
     suppl_list.append(Supplier(str(i), grid_op))
 for i in range(no_users):
@@ -150,8 +154,8 @@ for i in range(no_users):
 
 # (is_bid_accepted, bid_type, committed_value, indiv_deviation)
 # 1 => buy  /  -1 => sell
-start_time = time.time()   
-# payload_list = [(1, 1,3,-3), (1, 1,3,1), (1,1,3,3), (1, -1,5,-2), (1, -1,4,1), (0,1,3,3) ]
+start_time = time.time()
+# Generating payloads
 for slot in range(no_slots):
     payload_list.append([])
     total = 0
@@ -173,13 +177,16 @@ for i in range(1,5):
     trade_plat_list.append(TradingPlatform(algorithm = i, TP = 0.2, RP = 0.35, FiT = 0.05, user_list = user_list, supplier_list = suppl_list, grid_op = grid_op))
     algo_times[i] = []
 
+# Simulating P2P energy trading system
 for i, slot in enumerate(payload_list):
+    # User side
     print("\nEncrypting payloads for slot ", i + 1,"...")
     enc_start = time.time()
     for j, payload in enumerate(slot):
             user_list[j].update_payload(payload)
     enc_times.append(time.time() - enc_start)
     
+    # P2P trading platform side
     print("Running algorithms for slot ", i + 1,"...")
     for i, trade_plat in enumerate(trade_plat_list):
         algo_start_time = time.time()
@@ -187,7 +194,7 @@ for i, slot in enumerate(payload_list):
         algo_times[i+1].append(time.time() - algo_start_time)
         
 for i, trade_plat in enumerate(trade_plat_list):  
-    print("\n\nResults for algorithm ", i, ":")
+    print("\n\nResults for algorithm ", i + 1, ":")
     total_supp_keep_list.append(print_results(trade_plat, user_list, suppl_list))
 
 print("\n\nTotal supplier balances: ")
@@ -197,6 +204,6 @@ decryption_time = time.time()
 print()
 print("Payload encryption time: , ", sum(enc_times)/(no_slots*no_users))
 for i in range(len(trade_plat_list)):
-    print("Algorithm ",i+1," time: , ", mean(algo_times[i+1]))
+    print("Algorithm ",i+1," time (per slot): , ", mean(algo_times[i+1]))
 # print("Decryption time: , ", decryption_time - settlement_time)
 
