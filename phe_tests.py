@@ -1,20 +1,21 @@
 from phe import paillier
+import time
+import random
+import sys
+
 
 public_key, private_key = paillier.generate_paillier_keypair()
-
-list = [-100, -4.567, 6543.2432, 10000000]
+start = time.process_time()
+for i in range(100):
+    public_key, private_key = paillier.generate_paillier_keypair()
+stop = time.process_time()
+print("KeyGen: ", (stop - start) * 10)
+list = [random.uniform(-1, 1) for _ in range(1000)]
+start = time.process_time()
 enc_list = [public_key.encrypt(x) for x in list]
-cypher = public_key.encrypt(5)
-enc_calc_list1 = [x - cypher for x in enc_list]
-enc_calc_list2 = [x + cypher for x in enc_list]
-enc_calc_list3 = [x / 2 for x in enc_list]
-enc_calc_list4 = [x + 2 for x in enc_list]
-enc_calc_list5 = [x * (-1) for x in enc_list]
-
-print(cypher)
-
-print([private_key.decrypt(x) for x in enc_calc_list1])
-print([private_key.decrypt(x) for x in enc_calc_list2])
-print([private_key.decrypt(x) for x in enc_calc_list3])
-print([private_key.decrypt(x) for x in enc_calc_list4])
-print([private_key.decrypt(x) for x in enc_calc_list5])
+stop = time.process_time()
+print("HomoEnc: ", (stop - start))
+start = time.process_time()
+dec_list = [private_key.decrypt(x) for x in enc_list]
+stop = time.process_time()
+print("HomoDec: ",(stop - start))
