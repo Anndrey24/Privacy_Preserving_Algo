@@ -1,4 +1,4 @@
-# Privacy-Preserving Billing and Settlements in Local Energy Markets
+# Privacy Preserving Billing and Settlements in Local Energy Markets
 This code repository was created to support my 3<sup>rd</sup> Year Project / Dissertation for a BSc Computer Science degree at The University of Manchester.
 
 ## Project Description
