@@ -1,5 +1,5 @@
 # Privacy Preserving Billing and Settlements in Local Energy Markets
-This code repository was created to support my 3<sup>rd</sup> Year Project / Dissertation for a BSc Computer Science degree at The University of Manchester.
+This code repository was created to support my 3<sup>rd</sup> Year Project / Dissertation for a BSc Computer Science degree at The University of Manchester. The final report is available [here](./Privacy_Preserving_Billing_in_Local_Energy_Markets.pdf).
 
 ## Project Description
 This project aims to implement a novel privacy-preserving billing and settlements protocol, PPBSP, for use in local energy markets with imperfect bid-offer fulfillment, which only uses homomorphically encrypted versions of the users’ half-hourly consumption data using Python and the python-paillier library.   
