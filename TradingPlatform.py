@@ -62,7 +62,7 @@ class TradingPlatform:
             dict = self.supplier_dict_s_enc
         else:
             dict = self.supplier_dict_go_enc
-        return {k:[sum(slot) for slot in v] for k,v in dict.items()}
+        return {k:[sum(slot) if slot != [] else k.get_public_key().encrypt(0) for slot in v] for k,v in dict.items()}
 
     def calculate_partial_bills(self):
         for supplier in self.suppliers:
@@ -122,17 +122,19 @@ class TradingPlatform:
                          bid_type, consumption_type, energy_amount_go_enc)
 
     def algo_1_calc(self, user, user_bills, supplier, supplier_dict, bid_type, consumption_type, energy_amount):
+        bill = reward = energy_amount * 0
+        
         if consumption_type != bid_type:
             energy_amount *= -1
 
         # Net Buyer
         if consumption_type == 1:
-            bill = energy_amount * self.RP
+            bill += energy_amount * self.RP
             supplier_dict[supplier][-1].append(bill)
             user_bills[user].append(bill * (-1))
         # Net Seller    
         else:
-            reward = energy_amount * self.FiT
+            reward += energy_amount * self.FiT
             supplier_dict[supplier][-1].append(reward * (-1))
             user_bills[user].append(reward)
 
