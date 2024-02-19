@@ -6,8 +6,10 @@ This project aims to implement a novel privacy-preserving billing and settlement
 In addition, PPBSP also supports various cost-sharing mechanisms among market participants, including two new and improved methods of proportionally redistributing the cost of maintaining the balance of the electrical grid in a fair and intuitive manner.
 
 ## Installation and Dependencies
-This project requires Python and the python-paillier library. To install python-paillier, use the following command:  
-```pip install phe```
+- This project **requires** Python and the "python-paillier" library. To install python-paillier, use the following command:  
+```pip install phe```  
+- Optionally, install the optimised, C-coded "gmpy2" module for fast multiple-precision arithmetic, which drastically improves phe computation times:  
+```pip install gmpy2```
 
 ## Usage
 To use the PPBSP protocol, run the `main.py` script. This script will run a simulation of the local energy market billing and settlements procedure according to the parameters defined within the same file. These parameters are:  
